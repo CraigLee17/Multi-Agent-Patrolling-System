@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="js/raphael.js"></script>
+    <script src="js/createBlock.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1 class="text-center text-success" contenteditable="true" style="font-style: italic;">
+                Multi-Agent Patrolling System
+            </h1>
+        </div>
+    </div>
+
+    <br/>
+    <br/>
+    <ul class="breadcrumb" style="background: #0cae68">
+    </ul>
+    <br/>
+    <br/>
+    <br/>
+
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="container">
+                <div id="canvas_container"></div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <form class="form-inline">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon">width</span>
+                    <input id="width" type="text" class="form-control" placeholder="width"/>
+                    <span class="input-group-addon">height</span>
+                    <input id="height" type="text" class="form-control" placeholder="height"/>
+                </div>
+            </form>
+            <br/>
+            <button class="btn btn-large btn-block btn-success" type="button" onclick="setBlockSize()">Set Block Size
+            </button>
+            <br/>
+            <button class="btn btn-large btn-block btn-inverse" type="button" onclick="">Set Agent</button>
+            <br/>
+            <button class="btn btn-large btn-block btn-danger" type="button">Run/One Step</button>
+            <br/>
+            <button class="btn btn-large btn-block btn-primary" type="button">Run/Multiple Steps</button>
+            <br/>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
