@@ -25,14 +25,17 @@
  }
  }*/
 var agents = new Array();
+var agentsNumber=new Array();
 var mapArray = new Array();
+var paper
+var textArr=new Array();
 
 function setUpMap(tArray) {
     var container = document.getElementById('canvas_container');
     if (container.firstChild) {
         container.removeChild(container.firstChild);
     }
-    var paper = new Raphael(container, 8 * 50, 8 * 50);
+     paper= new Raphael(container, 8 * 50, 8 * 50);
     var matrix = paper.set();
     var id = 0;
 
@@ -45,7 +48,7 @@ function setUpMap(tArray) {
                 element.data("flag", 1);
             } else {
                 element = paper.rect(i * 50, j * 50, 50, 50).attr('fill', '#fff').data("flag", 0);
-                if ((i == 0 && j == 3) ||  (i == 0 && j == 4)||(i == 3 && j == 0) ||  (i == 4 && j == 0)||(i == 7 && j == 3) ||  (i ==7 && j == 4)||(i == 3 && j == 7) ||  (i == 4 && j == 7)) {
+                if ((i==0&&j==5)||(i==6&&j==3)||(i==6&&j==4)||(i==5&&j==3)||(i == 0 && j == 3) ||  (i == 0 && j == 4)||(i == 3 && j == 0) ||  (i == 4 && j == 0)||(i == 7 && j == 3) ||  (i ==7 && j == 4)||(i == 3 && j == 7) ||  (i == 4 && j == 7)) {
                     id++;
                     var agent = paper.rect(i * 50 + 20, j * 50 + 20, 10, 10)
                         .attr({
@@ -85,6 +88,7 @@ function maps() {
 }
 
 function run() {
+
     for (var i = 0; i < agents.length; i++) {
         var direction = Math.round(Math.random() * 3 + 1);
         var agent = agents[i];
@@ -129,6 +133,46 @@ function run() {
             "x": x,
             "y": y,
         }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
+    }
+    cleanNumber();
+    moreThanOneAgent();
+}
+
+function moreThanOneAgent() {
+    var agent,agentFollow;
+    for (var i = 0; i < agents.length; i++) {
+        var count=1;
+        for (var j = 0; j < agents.length; j++) {
+            if (i==j){
+                continue;
+            }
+            agent= agents[i];
+            agentFollow=agents[j];
+            // console.log(agent.data("x"))
+            // console.log(agentFollow.data("x"))
+            if (agent.data("x")==agentFollow.data("x")&&agent.data("y")==agentFollow.data("y")){
+                count++;
+            }
+        }
+        agentsNumber.push(count);
+    }
+    console.log(agentsNumber)
+
+    for (var k=0;k<agents.length;k++){
+        if (agentsNumber[k]>=1){
+            var x=agents[k].data('x');
+            var y=agents[k].data('y');
+            var textEle=paper.text(x*50+5,y*50+5,agentsNumber[k]).toFront();
+            textArr.push(textEle);
+        }
+    }
+    agentsNumber.splice(0,agentsNumber.length)
+
+}
+
+function cleanNumber() {
+    for (i in textArr){
+        textArr[i].remove();
     }
 }
 
