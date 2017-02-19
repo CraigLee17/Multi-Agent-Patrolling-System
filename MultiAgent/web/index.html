@@ -32,7 +32,10 @@
     <div class="row">
         <div class="col-md-8">
             <div class="container">
-                <div id="canvas_container"></div>
+                <div id="blockView"></div>
+                <br/>
+                <br/>
+                <div id="graphicalView"></div>
             </div>
         </div>
 
@@ -61,11 +64,11 @@
             <button class="btn btn-large btn-block btn-danger" type="button" onclick="run()">Run/One Step</button>
             <br/>
             <form class="form-inline">
-                <input id="width" type="text" class="form-control" placeholder="Enter Steps"/>
-                <button class="btn btn-large btn-block btn-primary" type="button" onclick="">Run/Multiple Steps</button>
+                <input id="steps" type="text" class="form-control" placeholder="Enter Steps"/>
+                <button class="btn btn-large btn-block btn-primary" type="button" onclick="runNsteps()">Run/Multiple Steps</button>
             </form>
             <br/>
-            <button class="btn btn-large btn-block btn-info" type="button" onclick="">Old Runs</button>
+            <button class="btn btn-large btn-block btn-info" type="button" onclick="hide()">Old Runs</button>
             <br/>
         </div>
     </div>

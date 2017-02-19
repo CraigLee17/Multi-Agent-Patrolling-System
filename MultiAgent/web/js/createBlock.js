@@ -1,41 +1,18 @@
 /**
  * Created by Zhiyuan Li on 2017/2/5.
  */
-/*function setBlockSize() {
- var container = document.getElementById('canvas_container');
- if (container.firstChild) {
- container.removeChild(container.firstChild);
- }
- var width = document.getElementById("width").value;
- var height = document.getElementById("height").value;
- if (!width || !height) {
- alert("Please input the size of the environment!");
- return;
- }
- var paper = new Raphael(document.getElementById('canvas_container'), width * 50, height * 50);
- var matrix= paper.set();
- for (var i = 0; i < width; i++) {
- matrix[i] = new Array()
- for (var j = 0; j < height; j++) {
- var  element = paper.rect(i* 50, j * 50, 50, 50).attr({'fill': "#fff"}).click(function () {
- this.attr({"fill": "#32b6ce"});
- });
- matrix[i].push(element);
- }
- }
- }*/
 var agents = new Array();
-var agentsNumber=new Array();
-var mapArray = new Array();
+var agentsNumber = new Array();
+var BlockMapArray = new Array();
 var paper
-var textArr=new Array();
+var textArr = new Array();
 
-function setUpMap(tArray) {
-    var container = document.getElementById('canvas_container');
+function setUpBlockView(tArray) {
+    var container = document.getElementById('blockView');
     if (container.firstChild) {
         container.removeChild(container.firstChild);
     }
-     paper= new Raphael(container, 8 * 50, 8 * 50);
+    paper = Raphael(container, 8 * 50, 8 * 50);
     var matrix = paper.set();
     var id = 0;
 
@@ -47,8 +24,8 @@ function setUpMap(tArray) {
                 element = paper.rect(i * 50, j * 50, 50, 50).attr('fill', '#32b6ce').data("flag", 1);
                 element.data("flag", 1);
             } else {
-                element = paper.rect(i * 50, j * 50, 50, 50).attr('fill', '#fff').data("flag", 0);
-                if ((i==0&&j==5)||(i==6&&j==3)||(i==6&&j==4)||(i==5&&j==3)||(i == 0 && j == 3) ||  (i == 0 && j == 4)||(i == 3 && j == 0) ||  (i == 4 && j == 0)||(i == 7 && j == 3) ||  (i ==7 && j == 4)||(i == 3 && j == 7) ||  (i == 4 && j == 7)) {
+                element = paper.rect(i * 50, j * 50, 50, 50).attr('fill', '#fff').data("flag", 0);//element=square
+                if ((i == 0 && j == 5) || (i == 6 && j == 3) || (i == 6 && j == 4) || (i == 5 && j == 3) || (i == 0 && j == 3) || (i == 0 && j == 4) || (i == 3 && j == 0) || (i == 4 && j == 0) || (i == 7 && j == 3) || (i == 7 && j == 4) || (i == 3 && j == 7) || (i == 4 && j == 7)) {
                     id++;
                     var agent = paper.rect(i * 50 + 20, j * 50 + 20, 10, 10)
                         .attr({
@@ -60,13 +37,14 @@ function setUpMap(tArray) {
                             "y": j,
                             "id": id
                         });
+                    element.attr('fill', "#8ffc9c");
                     agents.push(agent);
                 }
             }
             matrix[i].push(element);
         }
     }
-    mapArray = matrix;
+    BlockMapArray = matrix;
 }
 
 function maps() {
@@ -84,13 +62,16 @@ function maps() {
             }
         }
     }
-    setUpMap(tArray);
+    setUpBlockView(tArray);
+    setUpRegion(tArray);
 }
 
+var copyDirection = new Array();
 function run() {
-
+    copyDirection.splice(0,copyDirection.length);
     for (var i = 0; i < agents.length; i++) {
         var direction = Math.round(Math.random() * 3 + 1);
+        copyDirection.push(direction);
         var agent = agents[i];
         var x = agent.data("x");
         var y = agent.data("y");
@@ -98,7 +79,7 @@ function run() {
         switch (direction) {
             case 1:
                 if (x + 1 < 8) {
-                    if (mapArray[x + 1][y].data("flag") == 0) {
+                    if (BlockMapArray[x + 1][y].data("flag") == 0) {
                         x++;
                         changeColor(x, y);
                     }
@@ -106,7 +87,7 @@ function run() {
                 break;
             case 2:
                 if (y + 1 < 8) {
-                    if (mapArray[x][y + 1].data("flag") == 0) {
+                    if (BlockMapArray[x][y + 1].data("flag") == 0) {
                         y++;
                         changeColor(x, y);
                     }
@@ -114,7 +95,7 @@ function run() {
                 break;
             case 3:
                 if (x - 1 >= 0) {
-                    if (mapArray[x - 1][y].data("flag") == 0) {
+                    if (BlockMapArray[x - 1][y].data("flag") == 0) {
                         x--;
                         changeColor(x, y);
                     }
@@ -122,7 +103,7 @@ function run() {
                 break;
             case 4:
                 if (y - 1 >= 0) {
-                    if (mapArray[x][y - 1].data("flag") == 0) {
+                    if (BlockMapArray[x][y - 1].data("flag") == 0) {
                         y--;
                         changeColor(x, y);
                     }
@@ -134,23 +115,22 @@ function run() {
             "y": y,
         }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
     }
+    runGra();
     cleanNumber();
     moreThanOneAgent();
 }
 
 function moreThanOneAgent() {
-    var agent,agentFollow;
+    var agent, agentFollow;
     for (var i = 0; i < agents.length; i++) {
-        var count=1;
+        var count = 1;
         for (var j = 0; j < agents.length; j++) {
-            if (i==j){
+            if (i == j) {
                 continue;
             }
-            agent= agents[i];
-            agentFollow=agents[j];
-            // console.log(agent.data("x"))
-            // console.log(agentFollow.data("x"))
-            if (agent.data("x")==agentFollow.data("x")&&agent.data("y")==agentFollow.data("y")){
+            agent = agents[i];
+            agentFollow = agents[j];
+            if (agent.data("x") == agentFollow.data("x") && agent.data("y") == agentFollow.data("y")) {
                 count++;
             }
         }
@@ -158,25 +138,145 @@ function moreThanOneAgent() {
     }
     console.log(agentsNumber)
 
-    for (var k=0;k<agents.length;k++){
-        if (agentsNumber[k]>=1){
-            var x=agents[k].data('x');
-            var y=agents[k].data('y');
-            var textEle=paper.text(x*50+5,y*50+5,agentsNumber[k]).toFront();
+    for (var k = 0; k < agents.length; k++) {
+        if (agentsNumber[k] >= 1) {
+            var x = agents[k].data('x');
+            var y = agents[k].data('y');
+            var textEle = paper.text(x * 50 + 5, y * 50 + 5, agentsNumber[k]).toFront();
             textArr.push(textEle);
         }
     }
-    agentsNumber.splice(0,agentsNumber.length)
-
+    agentsNumber.splice(0, agentsNumber.length)
 }
 
 function cleanNumber() {
-    for (i in textArr){
+    for (var i in textArr) {
         textArr[i].remove();
     }
 }
 
-
 function changeColor(i, j) {
-    mapArray[i][j].attr("fill", "#8ffc9c");
+    BlockMapArray[i][j].attr("fill", "#8ffc9c");
 }
+
+
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
+function changeGraphicalColor(i, j) {
+    graphicalMapArray[i][j].attr("fill", "#8ffc9c");
+}
+
+var graphicalPaper;
+var graphicalMapArray;//circle;
+var graphicalAgentsArr=new Array();
+function setUpRegion(tArray) {//
+    var container = document.getElementById('graphicalView');
+    if (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+    graphicalPaper = Raphael(container, 8 * 50, 8 * 50);
+    var matrix = graphicalPaper.set();
+    for (var i = 0; i < 8; i++) {
+        matrix[i] = new Array()
+        for (var j = 0; j < 8; j++) {
+            var element;
+            if (tArray[i][j] == 1) {
+                element = graphicalPaper.rect(i * 50, j * 50, 50, 50).data("flag", 1).hide();
+                element.data("flag", 1);
+            } else {
+                element = graphicalPaper.circle(i * 50 + 25, j * 50 + 25, 25).data("flag", 0);
+                graphicalPaper.text(i * 50 + 25, j * 50 + 25,"("+i+","+j+")").toFront();
+                if ((i == 0 && j == 5) || (i == 6 && j == 3) || (i == 6 && j == 4) || (i == 5 && j == 3) || (i == 0 && j == 3) || (i == 0 && j == 4) || (i == 3 && j == 0) || (i == 4 && j == 0) || (i == 7 && j == 3) || (i == 7 && j == 4) || (i == 3 && j == 7) || (i == 4 && j == 7)) {
+                    var graphicalAgent=graphicalPaper.rect(i * 50 + 20, j * 50 + 20, 10, 10)
+                        .attr({
+                            'stroke-width': "0",
+                            "fill": "red"
+                        })
+                        .data({
+                            "x": i,
+                            "y": j,
+                        });
+
+                    element.attr('fill', "#8ffc9c");
+                    graphicalAgentsArr.push(graphicalAgent);
+                }
+            }
+            matrix[i].push(element);// push circle
+        }
+    }
+    graphicalMapArray = matrix;
+}
+
+function runGra() {
+    for (var i = 0; i < graphicalAgentsArr.length; i++) {
+        var direction = copyDirection[i];
+        var agent = graphicalAgentsArr[i];
+        var x = agent.data("x");
+        var y = agent.data("y");
+
+        switch (direction) {
+            case 1:
+                if (x + 1 < 8) {
+                    if (graphicalMapArray[x + 1][y].data("flag") == 0) {
+                        x++;
+                        changeGraphicalColor(x,y);
+                    }
+                }
+                break;
+            case 2:
+                if (y + 1 < 8) {
+                    if (graphicalMapArray[x][y + 1].data("flag") == 0) {
+                        y++;
+                        changeGraphicalColor(x,y);
+
+                    }
+                }
+                break;
+            case 3:
+                if (x - 1 >= 0) {
+                    if (graphicalMapArray[x - 1][y].data("flag") == 0) {
+                        x--;
+                        changeGraphicalColor(x,y);
+
+                    }
+                }
+                break;
+            case 4:
+                if (y - 1 >= 0) {
+                    if (graphicalMapArray[x][y - 1].data("flag") == 0) {
+                        y--;
+                        changeGraphicalColor(x,y);
+
+                    }
+                }
+                break;
+        }
+        agent.data({
+            "x": x,
+            "y": y,
+        }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
+    }
+}
+
+//-----------------------------------------------------run N steps------------------------------------------------------------------------------------------
+
+function runNsteps() {
+    var steps = $("#steps").val();
+    for (var i = 0; i<steps;i++){
+        run();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
