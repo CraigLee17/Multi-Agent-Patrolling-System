@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <script src="js/raphael.js"></script>
+	<script src="js/astar.js"></script>
     <script src="js/createBlock.js"></script>
+    <script src="js/styleControl.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -22,8 +24,32 @@
 
     <br/>
     <br/>
-    <ul class="breadcrumb" style="background: #0cae68">
-    </ul>
+    <div class="row-fluid">
+        <div class="span12">
+            <ul class="nav nav-tabs">
+                <li>
+                    <a onclick="toBlockView()">Block View</a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">Graphical View<strong class="caret"></strong></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a onclick="toGraphicalView()">1</a>
+                        </li>
+                        <li>
+                            <a>2</a>
+                        </li>
+                        <li>
+                            <a>3</a>
+                        </li>
+                        <li>
+                            <a>4</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
     <br/>
     <br/>
     <br/>
@@ -32,7 +58,10 @@
     <div class="row">
         <div class="col-md-8">
             <div class="container">
-                <div id="canvas_container"></div>
+                <div id="blockView"></div>
+				<br/>
+                <br/>
+                <div id="graphicalView" style="display: none"></div>
             </div>
         </div>
 
@@ -58,11 +87,11 @@
                 </div>
             </div>
             <br/>
-            <button class="btn btn-large btn-block btn-danger" type="button" onclick="run()">Run/One Step</button>
+            <button class="btn btn-large btn-block btn-danger" type="button" onclick="run(1)">Run/One Step</button>
             <br/>
             <form class="form-inline">
-                <input id="width" type="text" class="form-control" placeholder="Enter Steps"/>
-                <button class="btn btn-large btn-block btn-primary" type="button" onclick="">Run/Multiple Steps</button>
+                <input id="steps" type="text" class="form-control" placeholder="Enter Steps"/>
+                <button class="btn btn-large btn-block btn-primary" type="button" onclick="runNsteps()">Run/Multiple Steps</button>
             </form>
             <br/>
             <button class="btn btn-large btn-block btn-info" type="button" onclick="">Old Runs</button>
