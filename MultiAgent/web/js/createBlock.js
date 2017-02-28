@@ -1,12 +1,14 @@
 /**
  * Created by Zhiyuan Li on 2017/2/5.
  * Edited by Cameron Ario on 2017/2/10.
+ * Edited by Cameron Ario on 2017/2/10.
+
  */
-var agents; //array of agents on the map
+var agents;//array of agents on the map
 var agentsNumber; //array of text for squares with more than one agent on them
 var plainMapArray; //2D array on 1s and 0s representing the map
 var blockMapArray; //2D array of squares in the block viow
-var paper //Space on screen for the block view
+var paper//Space on screen for the block view
 var textArr; //also an array of text for squares with more than one agent on them
 var regionArr; // array of regions, nodes that belong to those regions, and information about those nodes
 
@@ -141,6 +143,7 @@ function maps() {
 
     setUpBlockView(plainMapArray);
     setUpRegion(plainMapArray);
+    createList();
 }
 
 //This method moves the agents a single step when run
@@ -282,8 +285,19 @@ function changeColor(i, j) {
 
 //--------------------------------------graphical view------------------------------------------------------------------------------
 
-var regions = {region1: ["0,1", "0,2", "0,3", "0,4", "0,5", "0,6", "1,2", "1,3", "1,4", "1,5", "2,3", "2,4"]};// test data for one region(open spaces)
+//__________________________to load information of node
+function queryData(x, y) {
+    var numberOfAgents;
+    for (var i in regionArr){
+        for(var j in regionArr[i]){
+            if(regionArr[i][j][0]==x&&regionArr[i][j][1]==y){
+                numberOfAgents = regionArr[i][j][2];
+            }
+        }
+    }
+}
 
+var coordinateArr = new Array();
 function setUpRegion(tArray) {
     var container = document.getElementById('graphicalView');
     if (container.firstChild) {
@@ -303,31 +317,33 @@ function setUpRegion(tArray) {
             } else {
                 element = graphicalPaper.circle(i * 50 + 25, j * 50 + 25, 25).data("flag", 1).hide();//hide all open spaces
                 element.data({x: i, y: j});
+                element.click(function () {
+                    alert("hello");
+                });
+                var coordinate=graphicalPaper.text(i * 50 + 25, j * 50 + 25, "(" + i + "," + j + ")").toFront()
+                    .data({x: i, y: j})
+                    .hide();
+                coordinateArr.push(coordinate);
             }
-            element.click(function () {
-// here is pop up window for open spaces;
-                alert(element.data("x"));
-            });
             matrix[i].push(element);// push circle
         }
     }
 
-
 // show selected open spaces（region1 refer line285）
-    for (var i in regions.region1) {
-        var coordinate = regions.region1[i].split(",");
-        for (var j = 0; j < matrix.length; j++) {
-            for (var k = 0; k < matrix[j].length; k++) {
-                console.log(matrix[j][k].data("x"));
-                if (coordinate[0] == matrix[j][k].data("x") && coordinate[1] == matrix[j][k].data("y")) {
-                    matrix[j][k].show();
-                    graphicalPaper.text(j * 50 + 25, k * 50 + 25,"("+j+","+k+")").toFront();
-                }
-            }
+    /*for (var i in regionArr[0]) {
+     var coordinate = regions.region1[i].split(",");
+     for (var j = 0; j < matrix.length; j++) {
+     for (var k = 0; k < matrix[j].length; k++) {
+     console.log(matrix[j][k].data("x"));
+     if (coordinate[0] == matrix[j][k].data("x") && coordinate[1] == matrix[j][k].data("y")) {
+     matrix[j][k].show();
+     graphicalPaper.text(j * 50 + 25, k * 50 + 25,"("+j+","+k+")").toFront();
+     }
+     }
 
 
-        }
-    }
+     }
+     }*/
 
     graphicalMapArray = matrix;
     //insert agents into graph view at positions identical to block view's agents
@@ -343,10 +359,53 @@ function setUpRegion(tArray) {
             .data({
                 "x": x,
                 "y": y,
-            });
+            }).hide();
 
         changeGraphicalColor(x, y);
         graphicalAgentsArr.push(graphAgent);
+    }
+
+}
+
+function hideAllRegions() {
+    for (var i in graphicalMapArray) {
+        for (var j in graphicalMapArray[i]) {
+            graphicalMapArray[i][j].hide();
+        }
+    }
+
+    for ( var i in coordinateArr){
+        coordinateArr[i].hide();
+    }
+}
+
+// show the specific region by the given region id number
+function showRegion(regionNum) {
+    hideAllRegions();
+
+    var region = regionArr[regionNum];
+    for (var i = 0; i < region.length; i++) {
+        var x = region[i][0];
+        var y = region[i][1];
+        // show the circles of the region
+        graphicalMapArray[x][y].show();
+
+        // show the text coordinates of this region
+        for (var j in coordinateArr) {
+            if (coordinateArr[j].data("x")==x&&coordinateArr[j].data("y")==y){
+                coordinateArr[j].show();
+            }
+        }
+        //graphicalPaper.text(x * 50 + 25, y * 50 + 25,"("+x+","+y+")").toFront();
+    }
+
+    // show the agents of the region
+    for (var i in agents) {
+        if (agents[i].data("region") == regionNum) {
+            graphicalAgentsArr[i].show();
+        } else {
+            graphicalAgentsArr[i].hide();
+        }
     }
 }
 
@@ -365,7 +424,23 @@ function runGra(copyDirection) {
     }
 }
 
+
 //change colour of visited circle on graph view
 function changeGraphicalColor(i, j) {
     graphicalMapArray[i][j].attr("fill", "#8ffc9c"); //colour the visited circle on the graph view
 }
+
+//create the dropdown list
+function createList() {
+    var n = regionArr.length;
+    for (var i = 0; i < n; i++) {
+        var li = $("<li value='" + i + "' >" + i + "</li>");
+        li.click(function () {
+            toGraphicalView();
+            var id = this.value;
+            showRegion(id);
+        });
+        $("#list").append(li);
+    }
+}
+
