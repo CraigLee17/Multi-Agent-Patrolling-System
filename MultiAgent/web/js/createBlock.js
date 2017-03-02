@@ -76,7 +76,22 @@ function setUpBlockView(tArray) {
 
     cleanNumber();
     moreThanOneAgent();
+    addClickEvent();
 }
+
+function addClickEvent() {
+    for (var i in regionArr){
+        for(var j in regionArr[i]){
+            var x=regionArr[i][j][0];
+            var y=regionArr[i][j][1];
+            blockMapArray[x][y].data({region:i}).dblclick(function () {
+                toGraphicalView();
+                showRegion(this.data("region"));
+            });
+        }
+    }
+}
+
 
 //this method creates the map to be used
 function maps() {
@@ -143,7 +158,6 @@ function maps() {
 
     setUpBlockView(plainMapArray);
     setUpRegion(plainMapArray);
-    createList();
 }
 
 //This method moves the agents a single step when run
@@ -275,7 +289,6 @@ function changeColor(i, j) {
         for (var l = 0; l < regionArr[k].length; l++) {
             if (regionArr[k][l][0] == i && regionArr[k][l][1] == j) {
                 regionArr[k][l][2][regionArr[k][l][2].length - 1] += 1;
-
                 regionArr[k][l][3] = true;
             }
         }
@@ -316,7 +329,7 @@ function setUpRegion(tArray) {
                 element.data("flag", 0);
             } else {
                 element = graphicalPaper.circle(i * 50 + 25, j * 50 + 25, 25).data("flag", 1).hide();//hide all open spaces
-                element.data({x: i, y: j});
+                element.data({x: i, y: j}).attr({"fill":"white"});
                 element.click(function () {
                     alert("hello");
                 });
@@ -346,6 +359,8 @@ function setUpRegion(tArray) {
      }*/
 
     graphicalMapArray = matrix;
+
+
     //insert agents into graph view at positions identical to block view's agents
     for (var i = 0; i < agents.length; i++) {
         var x = agents[i].data("x");
@@ -382,7 +397,6 @@ function hideAllRegions() {
 // show the specific region by the given region id number
 function showRegion(regionNum) {
     hideAllRegions();
-
     var region = regionArr[regionNum];
     for (var i = 0; i < region.length; i++) {
         var x = region[i][0];
@@ -430,17 +444,4 @@ function changeGraphicalColor(i, j) {
     graphicalMapArray[i][j].attr("fill", "#8ffc9c"); //colour the visited circle on the graph view
 }
 
-//create the dropdown list
-function createList() {
-    var n = regionArr.length;
-    for (var i = 0; i < n; i++) {
-        var li = $("<li value='" + i + "' >" + i + "</li>");
-        li.click(function () {
-            toGraphicalView();
-            var id = this.value;
-            showRegion(id);
-        });
-        $("#list").append(li);
-    }
-}
 
