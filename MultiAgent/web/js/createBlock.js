@@ -1,8 +1,6 @@
 /**
  * Created by Zhiyuan Li on 2017/2/5.
  * Edited by Cameron Ario on 2017/2/10.
- * Edited by Cameron Ario on 2017/2/10.
-
  */
 var agents;//array of agents on the map
 var agentsNumber; //array of text for squares with more than one agent on them
@@ -52,6 +50,7 @@ function setUpBlockView(tArray) {
             var j = regionArr[a][loc][1];
 
             changeColor(i, j); //set node to visited
+            regionArr[a][loc][2] = true;
 
             id++;
 
@@ -65,7 +64,9 @@ function setUpBlockView(tArray) {
                     "y": j,
                     "id": id,
                     "region": a,
-                    "goal": loc
+                    "goal": loc,
+                    "goalArr": new Array(),
+                    "locArr": [loc]
                 });
 
             agents.push(agent);
@@ -80,11 +81,11 @@ function setUpBlockView(tArray) {
 }
 
 function addClickEvent() {
-    for (var i in regionArr){
-        for(var j in regionArr[i]){
-            var x=regionArr[i][j][0];
-            var y=regionArr[i][j][1];
-            blockMapArray[x][y].data({region:i}).dblclick(function () {
+    for (var i in regionArr) {
+        for (var j in regionArr[i]) {
+            var x = regionArr[i][j][0];
+            var y = regionArr[i][j][1];
+            blockMapArray[x][y].data({region: i}).dblclick(function () {
                 toGraphicalView();
                 showRegion(this.data("region"));
             });
@@ -132,8 +133,8 @@ function maps() {
             var node = new Array();
             node.push(a); //node's x position
             node.push(b); //node's y position
-            node.push([0]); //array containing what agents on it each step of the algorithm (eg. reigonArr[region][node][2][step#])
-            node.push(false); //String true or false if the node has been visited by an agent before
+            node.push(false); //true or false if the node is currently / has been the goal of an agent
+            node.push(false); //true or false if the node has been visited by an agent before
 
             if (a == b) {
             }
@@ -162,63 +163,88 @@ function maps() {
 
 //This method moves the agents a single step when run
 function run(runs) {
-    for (var n = 0; n < runs; n++) {
+    for (var n = 0; n < runs; n++) { //repeat steps n times
         var copyDirection = new Array();
-        for (var k = 0; k < agents.length; k++) {//for each agent
+
+        //set the graph view movement to stay in place is there is no movement
+        for (var k = 0; k < agents.length; k++) {
             copyDirection.push(new Array());
-            copyDirection[copyDirection.length - 1].push(agents[k].data("x")); //set the graph view movement to stay in place is there is no movement
+            copyDirection[copyDirection.length - 1].push(agents[k].data("x"));
             copyDirection[copyDirection.length - 1].push(agents[k].data("y"));
         }
 
         for (var i = 0; i < regionArr.length; i++) { //for each region
+
+            //check if the current region has been explored fully and all agents are stopped
             var finished = true;
-            for (var j = 0; j < regionArr[i].length; j++) {//for each node in that region
+            for (var j = 0; j < regionArr[i].length; j++) {//if there is an unvisited node
 
-                regionArr[i][j][2].push(0); //start new information on each node's current step
-
-                if (regionArr[i][j][3] == false) { //if there is an unvisited node
+                if (regionArr[i][j][3] == false) {
                     finished = false;
                 }
             }
-            for (var k = 0; k < agents.length; k++) {//for each agent
+            for (var k = 0; k < agents.length; k++) {//if there is an agent still going to a goal
+                if (agents[k].data("region") == i) {
+                    if (agents[k].data("x") != regionArr[i][agents[k].data("goal")][0] && agents[k].data("y") != regionArr[i][agents[k].data("goal")][1]) {
+                        finished = false;
+                    }
+                }
+            }
 
+
+            for (var k = 0; k < agents.length; k++) {//for each agent
                 if (finished == false && agents[k].data("region") == i) { //run algorithm in unfinished region
 
-                    if (regionArr[i][agents[k].data("goal")][3] == true) { //if the agent's goal has been visited, find a new goal
-                        //agents[k].data("goal") = Math.floor(Math.random() * unvisitedRegionArr[i].length);
-                        var newGoal = 0;
+                    //if the agent has made it to its goal, find a new goal.
+                    if (agents[k].data("x") == regionArr[i][agents[k].data("goal")][0] && agents[k].data("y") == regionArr[i][agents[k].data("goal")][1]) {
+                        var newGoal = -1;
                         var tempNum = 0;
                         for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
-                            if (regionArr[i][a][3] == false) { //if the node isn't visited
+                            if (regionArr[i][a][3] == false && regionArr[i][a][2] == false) { //if the node isn't visited and isn't a goal
                                 var temp = Math.random();
                                 if (tempNum <= temp) { //randomly pick a new goal from the unvisited nodes
                                     newGoal = a;
                                 }
                             }
                         }
-                        agents[k].data({ //change the agent's goal
-                            "goal": newGoal
-                        });
+                        if (newGoal != -1) {
+                            agents[k].data({ //change the agent's goal
+                                "goal": newGoal
+                            });
+
+                            agents[k].data("goalArr").push(newGoal);
+                            regionArr[i][newGoal][2] = true;
+                        }
                     }
 
                     //use algorithm to move
-                    var graph = new Graph(plainMapArray);
+                    if (agents[k].data("x") != regionArr[i][agents[k].data("goal")][0] || agents[k].data("y") != regionArr[i][agents[k].data("goal")][1]) {
+                        var graph = new Graph(plainMapArray);
 
-                    var start = graph.grid[agents[k].data("x")][agents[k].data("y")];
-                    var end = graph.grid[regionArr[i][agents[k].data("goal")][0]][regionArr[i][agents[k].data("goal")][1]];
-                    var result = astar.search(graph, start, end);
+                        var start = graph.grid[agents[k].data("x")][agents[k].data("y")];
+                        var end = graph.grid[regionArr[i][agents[k].data("goal")][0]][regionArr[i][agents[k].data("goal")][1]];
+                        var result = astar.search(graph, start, end);
 
-                    var x = result[0].x;
-                    var y = result[0].y;
+                        var x = result[0].x;
+                        var y = result[0].y;
 
-                    copyDirection[k][0] = x; //set the graph view movement to where the agent moved to
-                    copyDirection[k][1] = y;
+                        copyDirection[k][0] = x; //set the graph view movement to where the agent moved to
+                        copyDirection[k][1] = y;
 
-                    agents[k].data({ //change the agent's placement on the map
-                        "x": x,
-                        "y": y
-                    }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
+                        agents[k].data({ //change the agent's placement on the map
+                            "x": x,
+                            "y": y
+                        }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
 
+                        //add new node to agent's visited locations array
+                        for (var a = 0; a < regionArr.length; a++) {
+                            for (var b = 0; b < regionArr[a].length; b++) {
+                                if (regionArr[a][b][0] == x && regionArr[a][b][1] == y) {
+                                    agents[k].data("locArr").push(b);
+                                }
+                            }
+                        }
+                    }
 
                 }
             }
@@ -285,14 +311,16 @@ function cleanNumber() {
 function changeColor(i, j) {
     blockMapArray[i][j].attr("fill", "#8ffc9c"); //colour the visited square on the block view
 
-    for (var k = 0; k < regionArr.length; k++) { //set the node in the region array to visited and add information about agent on that node on the current step
+    for (var k = 0; k < regionArr.length; k++) { //set the node in the region array to visited
         for (var l = 0; l < regionArr[k].length; l++) {
             if (regionArr[k][l][0] == i && regionArr[k][l][1] == j) {
-                regionArr[k][l][2][regionArr[k][l][2].length - 1] += 1;
+                regionArr[k][l][2] = true;
                 regionArr[k][l][3] = true;
             }
         }
     }
+
+    //document.getElementById("steps").value = "test"; //for testing purposes
 }
 
 
@@ -301,14 +329,15 @@ function changeColor(i, j) {
 //__________________________to load information of node
 function queryData(x, y) {
     var numberOfAgents;
-    for (var i in regionArr){
-        for(var j in regionArr[i]){
-            if(regionArr[i][j][0]==x&&regionArr[i][j][1]==y){
+    for (var i in regionArr) {
+        for (var j in regionArr[i]) {
+            if (regionArr[i][j][0] == x && regionArr[i][j][1] == y) {
                 numberOfAgents = regionArr[i][j][2];
             }
         }
     }
 }
+
 
 var coordinateArr = new Array();
 function setUpRegion(tArray) {
@@ -316,8 +345,9 @@ function setUpRegion(tArray) {
     if (container.firstChild) {
         container.removeChild(container.firstChild);
     }
-    graphicalPaper = Raphael(container, 8 * 50, 8 * 50);
+    graphicalPaper = Raphael(container, 8 * 60, 8 * 60);
     var matrix = new Array();
+
 
     //colour nodes
     for (var i = 0; i < 8; i++) {
@@ -325,15 +355,52 @@ function setUpRegion(tArray) {
         for (var j = 0; j < 8; j++) {
             var element;
             if (tArray[i][j] == 0) {
-                element = graphicalPaper.rect(i * 50, j * 50, 50, 50).data("flag", 0).hide();//hide closed spaces
+                element = graphicalPaper.rect(i * 60, j * 60, 60, 60).data("flag", 0).hide();//hide closed spaces
                 element.data("flag", 0);
             } else {
-                element = graphicalPaper.circle(i * 50 + 25, j * 50 + 25, 25).data("flag", 1).hide();//hide all open spaces
-                element.data({x: i, y: j}).attr({"fill":"white"});
-                element.click(function () {
-                    alert("hello");
+                element = graphicalPaper.circle(i * 60 + 30, j * 60 + 30, 30).data("flag", 1).hide();//hide all open spaces
+                element.data({x: i, y: j}).attr({"fill": "white"});
+                element.dblclick(function () {
+                    var x = this.data("x");
+                    var y = this.data("y");
+                    var flag = false;
+                    var validateAgentArr=new Array();
+                    for (var i in agents) {
+                        if (x == agents[i].data("x") && y == agents[i].data("y")) {
+                            var trackLoc = agents[i].data("locArr");
+                            var goalArr=agents[i].data("goalArr");
+                            var goal = agents[i].data("goal");
+                            var track = "track: ";
+                            var historyGoals='';
+                            goalArr.forEach(function (goalLoc) {
+                                historyGoals += "(" + (regionArr[agents[i].data('region')][goalLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][goalLoc][1] + 1) + ")";
+                            });
+                            trackLoc.forEach(function (trackLoc) {
+                                track += "(" + (regionArr[agents[i].data('region')][trackLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][trackLoc][1] + 1) + ")";
+                            });
+                            var goalx = regionArr[agents[i].data("region")][goal][0] + 1;
+                            var goaly = regionArr[agents[i].data("region")][goal][1] + 1;
+                            var goals="(" + goalx + "," + goaly + ")";
+                            var agentInfor=new agentInfo(agents[i].data("id"),track,goals,historyGoals);
+                            validateAgentArr.push(agentInfor);
+                            flag = true;
+                        }
+
+                    }
+
+
+                    if (!flag) {
+                        alert("No agent is here!");
+                    }else {
+                        var string="Number of agents: "+validateAgentArr.length+"\n\n";
+                        validateAgentArr.forEach(function (agent) {
+                            string+="Agent id: " +agent.id+"\n"+"Track: "+agent.track+"\n"+"Current target: "+agent.goal+"\n"+"History targets: "+
+                                    agent.historyGoal+"\n\n";
+                        });
+                        alert(string);
+                    }
                 });
-                var coordinate=graphicalPaper.text(i * 50 + 25, j * 50 + 25, "(" + i + "," + j + ")").toFront()
+                var coordinate = graphicalPaper.text(i * 60 + 18, j * 60 + 18, "(" + (i + 1) + "," + (j + 1) + ")").toFront()
                     .data({x: i, y: j})
                     .hide();
                 coordinateArr.push(coordinate);
@@ -341,22 +408,6 @@ function setUpRegion(tArray) {
             matrix[i].push(element);// push circle
         }
     }
-
-// show selected open spaces（region1 refer line285）
-    /*for (var i in regionArr[0]) {
-     var coordinate = regions.region1[i].split(",");
-     for (var j = 0; j < matrix.length; j++) {
-     for (var k = 0; k < matrix[j].length; k++) {
-     console.log(matrix[j][k].data("x"));
-     if (coordinate[0] == matrix[j][k].data("x") && coordinate[1] == matrix[j][k].data("y")) {
-     matrix[j][k].show();
-     graphicalPaper.text(j * 50 + 25, k * 50 + 25,"("+j+","+k+")").toFront();
-     }
-     }
-
-
-     }
-     }*/
 
     graphicalMapArray = matrix;
 
@@ -366,7 +417,7 @@ function setUpRegion(tArray) {
         var x = agents[i].data("x");
         var y = agents[i].data("y");
 
-        var graphAgent = graphicalPaper.rect(x * 50 + 20, y * 50 + 20, 10, 10)
+        var graphAgent = graphicalPaper.rect(x * 60 + 25, y * 60 + 25, 10, 10)
             .attr({
                 'stroke-width': "0",
                 "fill": "red"
@@ -381,6 +432,12 @@ function setUpRegion(tArray) {
     }
 
 }
+function agentInfo(id ,track, goal, historyGoal) {
+    this.id=id;
+    this.track=track;
+    this.goal=goal;
+    this.historyGoal=historyGoal;
+}
 
 function hideAllRegions() {
     for (var i in graphicalMapArray) {
@@ -389,7 +446,7 @@ function hideAllRegions() {
         }
     }
 
-    for ( var i in coordinateArr){
+    for (var i in coordinateArr) {
         coordinateArr[i].hide();
     }
 }
@@ -406,11 +463,10 @@ function showRegion(regionNum) {
 
         // show the text coordinates of this region
         for (var j in coordinateArr) {
-            if (coordinateArr[j].data("x")==x&&coordinateArr[j].data("y")==y){
+            if (coordinateArr[j].data("x") == x && coordinateArr[j].data("y") == y) {
                 coordinateArr[j].show();
             }
         }
-        //graphicalPaper.text(x * 50 + 25, y * 50 + 25,"("+x+","+y+")").toFront();
     }
 
     // show the agents of the region
@@ -434,7 +490,7 @@ function runGra(copyDirection) {
         graphicalAgentsArr[i].data({
             "x": x,
             "y": y
-        }).attr({x: x * 50 + 20, y: y * 50 + 20}).toFront();
+        }).attr({x: x * 60 + 25, y: y * 60 + 25}).toFront();
     }
 }
 

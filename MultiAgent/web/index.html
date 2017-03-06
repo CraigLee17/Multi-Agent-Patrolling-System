@@ -6,43 +6,18 @@
 	<script src="js/astar.js"></script>
     <script src="js/createBlock.js"></script>
     <script src="js/styleControl.js"></script>
-    <script src="js/xcConfirm.js"></script>
-    <link href="css/xcConfirm.css">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <title>Title</title>
+    <title>Multi-Agents Patrolling System</title>
 
 </head>
 <body>
-
-<div class="container">
-    <div class="row">
-        <div class="span12">
-            <h1 class="text-center text-success" contenteditable="true" style="font-style: italic;">
-                Multi-Agent Patrolling System
-            </h1>
-        </div>
-    </div>
-
     <br/>
     <br/>
-    <div class="row-fluid">
-        <div class="span12">
-            <ul class="nav nav-tabs">
-                <li>
-                    <a onclick="toBlockView()">Block View</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-    <br/>
-    <br/>
-    <br/>
-
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-9">
             <div class="container">
                 <div id="blockView"></div>
 				<br/>
@@ -51,11 +26,12 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-2">
+            <h2>Multi-Agents Patrolling System</h2>
             <div class="span4">
                 <div class="btn-group btn-group-lg">
-                    <button class="btn dropdown-toggle btn-lg btn-success"
-                            data-toggle="dropdown" style="width: 360px; height: 33.14px">
+                    <button class="btn btn-lg dropdown-toggle btn-success"
+                            data-toggle="dropdown">
                         Map <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
@@ -80,9 +56,12 @@
                 <button class="btn btn-large btn-block btn-primary" type="button" onclick="runNsteps()">Run/Multiple Steps</button>
             </form>
             <br/>
-            <button class="btn btn-large btn-block btn-info" type="button" onclick="">Old Runs</button>
+            <button class="btn btn-large btn-block btn-info" type="button" onclick="toBlockView()">Block View</button>
+            <br/>
+            <button class="btn btn-large btn-block btn-success" type="button" onclick="">Old Runs</button>
             <br/>
         </div>
+        <!--<div id="nodeInfoInGraphical"></div>-->
     </div>
 
 </div>
