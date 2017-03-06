@@ -370,8 +370,8 @@ function setUpRegion(tArray) {
                             var trackLoc = agents[i].data("locArr");
                             var goalArr=agents[i].data("goalArr");
                             var goal = agents[i].data("goal");
-                            var track = "track: ";
-                            var historyGoals='';
+                            var track = "";
+                            var historyGoals="";
                             goalArr.forEach(function (goalLoc) {
                                 historyGoals += "(" + (regionArr[agents[i].data('region')][goalLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][goalLoc][1] + 1) + ")";
                             });
