@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="MultiAgent:war">
-    <output-path>$PROJECT_DIR$/out/artifacts/MultiAgent_war</output-path>
-    <root id="archive" name="MultiAgent_war.war">
-      <element id="artifact" artifact-name="MultiAgent:war exploded" />
-    </root>
-  </artifact>
-</component>
