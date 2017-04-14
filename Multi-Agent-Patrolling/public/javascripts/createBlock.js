@@ -21,6 +21,8 @@ var currentSteps; //int of the current step the algorithm is on
 var finish;
 var algorithm; //the algorithm that is currently being used
 
+var currentRegionNum;
+
 //This code creates/colours the map on the screen and adds agents to the map
 function setUpBlockView(tArray, newAgents) {
     var container = document.getElementById('blockView');
@@ -61,18 +63,49 @@ function setUpBlockView(tArray, newAgents) {
 			}
 			
 			//find a goal for the agent
-			var loc;
-			var tempNum = 0;
-			for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
-                if (regionArr[i][a][3] == false && regionArr[i][a][2] == false) { //if the node isn't visited and isn't a goal
-                    var temp = Math.random();
-                    if (tempNum <= temp) { //randomly pick a new goal from the unvisited nodes
-                        loc = a;
-						tempNum = temp;
-                    }
-                }
-            }
-			regionArr[i][loc][2] = true;
+			var loc = -1;
+			if(algorithm == "Free Form"){//free form random goal & unique
+				var tempNum = 0;
+				for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
+					if (regionArr[i][a][3] == false && regionArr[i][a][2] == false) { //if the node isn't visited and isn't a goal
+						var temp = Math.random();
+						if (tempNum <= temp) { //randomly pick a new goal from the unvisited nodes
+							loc = a;
+							tempNum = temp;
+						}
+					}
+				}
+			}
+			else if(algorithm == "Constrained 3"){//Constrained 3 farthest goal & NOT unique
+				var tempNum = 0;
+				var graph = new Graph(plainMapArray);
+				var begin = graph.grid[newAgents[i][j][1]][newAgents[i][j][2]];
+				for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
+					if (regionArr[i][a][3] == false) { //if the node isn't visited
+						var end = graph.grid[regionArr[i][a][0]][regionArr[i][a][1]];
+						var result = astar.search(graph, begin, end);
+						var temp = result.length;
+						if (tempNum <= temp) { //pick a goal with the longest path
+							loc = a;
+							tempNum = temp;
+						}
+					}
+				}
+			}
+			else if(algorithm == "Constrained 4"){//Constrained 4 order goal & NOT unique
+				for(var a = regionArr[i].length-1; a >= 0; a--){//for each node in the region
+					if (regionArr[i][a][3] == false) { //if the node isn't visited
+						loc = a;
+					}
+				}
+			}
+			if(loc != -1){
+				regionArr[i][loc][2] = true;
+			}
+			else{
+				loc = 0;
+			}
+			
 			
 			var agent = paper.rect(newAgents[i][j][1] * 50 + 20, newAgents[i][j][2] * 50 + 20, 10, 10) //add agent to map and agents array
                 .attr({
@@ -106,6 +139,8 @@ function addClickEvent() {
             blockMapArray[x][y].data({region: i}).dblclick(function () {
                 toGraphicalView();
                 showRegion(this.data("region"));
+                currentRegionNum=this.data("region");
+                displayTargets(this.data("region"));
             });
         }
     }
@@ -291,7 +326,6 @@ function maps() {
 			newAgents[i][agentNum][0] = fileLines[line];
 			
 			//check that agent's position is in the region
-			//TODO: and check that the agent is at the endpoint of a region in Constrained 4 algorithm
 			line++;
 			var agentLoc = fileLines[line].split(",");
 			if(isNaN(agentLoc[0]) || agentLoc[0] < 1 || isNaN(agentLoc[1]) || agentLoc[1] < 1){//make sure there is a valid x and y
@@ -322,11 +356,80 @@ function maps() {
 			alert("Invalid number of agents in region " + i);
 			return;
 		}
-		else if(algorithm == "Constrained 3" && (newAgents[i].length < 1 || newAgents[i].length > Math.ceil(regionArr[i].length / 3))){
-			alert("Invalid number of agents in region " + i);
-			return;
+		else if(algorithm == "Constrained 4"){
+			if(newAgents[i].length < 1 || newAgents[i].length > Math.ceil(regionArr[i].length / 4)){
+				alert("Invalid number of agents in region " + i);
+				return;
+			}
+			else if(newAgents[i].length != 1){//make sure all agents are at end points on the map
+				var adjacentCounter = 0;
+				for(var agentSearch = 0; agentSearch < newAgents.length; agentSearch++){
+					for(var nodeSearch = 0; nodeSearch < regionArr[i].length; nodeSearch++){
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1]+1 && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1]-1 && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1] && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]+1){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1] && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]-1){
+							adjacentCounter++;
+						}
+					}
+				}
+				if(adjacentCounter > 1){
+					alert("Agent in region " + i + " must be placed at endpoints");
+					return;
+				}
+			}
+			else if(newAgents[i].length == 1){
+				var adjacentCounter = 0;
+				for(var agentSearch = 0; agentSearch < newAgents.length; agentSearch++){
+					for(var nodeSearch = 0; nodeSearch < regionArr[i].length; nodeSearch++){
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1]+1 && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1]-1 && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1] && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]+1){
+							adjacentCounter++;
+						}
+						if(regionArr[i][nodeSearch][0] == newAgents[i][agentSearch][1] && regionArr[i][nodeSearch][1] == newAgents[i][agentSearch][2]-1){
+							adjacentCounter++;
+						}
+					}
+				}
+				if(adjacentCounter > 1){
+					
+					var endPointCounter = 0;
+					for(var nodeSearch1 = 0; nodeSearch1 < regionArr[i].length; nodeSearch1++){
+						endPointCounter = 0;
+						for(var nodeSearch2 = 0; nodeSearch2 < regionArr[i].length; nodeSearch2++){
+							if(regionArr[i][nodeSearch2][0] == regionArr[i][nodeSearch1][0]+1 && regionArr[i][nodeSearch2][1] == regionArr[i][nodeSearch1][1]){
+								endPointCounter++;
+							}
+							if(regionArr[i][nodeSearch2][0] == regionArr[i][nodeSearch1][0]-1 && regionArr[i][nodeSearch2][1] == regionArr[i][nodeSearch1][1]){
+								endPointCounter++;
+							}
+							if(regionArr[i][nodeSearch2][0] == regionArr[i][nodeSearch1][0] && regionArr[i][nodeSearch2][1] == regionArr[i][nodeSearch1][1]+1){
+								endPointCounter++;
+							}
+							if(regionArr[i][nodeSearch2][0] == regionArr[i][nodeSearch1][0] && regionArr[i][nodeSearch2][1] == regionArr[i][nodeSearch1][1]-1){
+								endPointCounter++;
+							}
+						}
+						if(endPointCounter < 2){
+							alert("Agent in region " + i + " must be placed at endpoints");
+							return;
+						}
+					}
+				}
+			}
 		}
-		else if(algorithm == "Constrained 4" && (newAgents[i].length < 1 || newAgents[i].length > Math.ceil(regionArr[i].length / 4))){
+		else if(algorithm == "Constrained 3" && (newAgents[i].length < 1 || newAgents[i].length > Math.ceil(regionArr[i].length / 3))){
 			alert("Invalid number of agents in region " + i);
 			return;
 		}
@@ -470,7 +573,7 @@ function run(runs) {
             for (var k = 0; k < agents.length; k++) {//for each agent
                 if (finished == false && agents[k].data("region") == i) { //run algorithm in unfinished region
 					
-                    //use algorithm to move
+                    //use astar algorithm to move
 					if(agents[k].data("x") != regionArr[i][agents[k].data("goal")][0] || agents[k].data("y") != regionArr[i][agents[k].data("goal")][1]){
 						var graph = new Graph(plainMapArray);
 
@@ -497,40 +600,67 @@ function run(runs) {
 								}
 							}
 						}
+						
+						//colour square in
+						changeColor(x, y);
 					}
 					
 					//if the agent has made it to its goal, find a new goal.
                     if (agents[k].data("x") == regionArr[i][agents[k].data("goal")][0] && agents[k].data("y") == regionArr[i][agents[k].data("goal")][1]) {
-                        var newGoal = -1;
-                        var tempNum = 0;
-                        for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
-                            if (regionArr[i][a][3] == false && regionArr[i][a][2] == false) { //if the node isn't visited and isn't a goal
-                                var temp = Math.random();
-                                if (tempNum <= temp) { //randomly pick a new goal from the unvisited nodes
-                                    newGoal = a;
-									tempNum = temp;
-                                }
-                            }
-                        }
+						
+						var newGoal = -1;
+						
+						if(algorithm == "Free Form"){//Free Form random goal
+							var tempNum = 0;
+							for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
+								if (regionArr[i][a][3] == false && regionArr[i][a][2] == false) { //if the node isn't visited and isn't a goal
+									var temp = Math.random();
+									if (tempNum <= temp) { //randomly pick a new goal from the unvisited nodes
+										newGoal = a;
+										tempNum = temp;
+									}
+								}
+							}
+						}
+						else if(algorithm == "Constrained 3"){//Constrained 3 Farthest Goal
+							var tempNum = 0;
+							var graph = new Graph(plainMapArray);
+							var start = graph.grid[agents[k].data("x")][agents[k].data("y")];
+							for (var a = 0; a < regionArr[i].length; a++) { //for each node in the region
+								if (regionArr[i][a][3] == false) { //if the node isn't visited
+									var end = graph.grid[regionArr[i][a][0]][regionArr[i][a][1]];
+									var result = astar.search(graph, start, end);
+									var temp = result.length;
+									if (tempNum <= temp) { //pick a goal with the longest path
+										newGoal = a;
+										tempNum = temp;
+									}
+								}
+							}
+						}
+						else if(algorithm == "Constrained 4"){//Constrained 4 Next Goal
+							for(var a = regionArr[i].length-1; a >= 0; a--){//for each node in the region back to front
+								if (regionArr[i][a][3] == false) { //if the node isn't visited
+									newGoal = a;
+								}
+							}
+						}
+						
 						if(newGoal != -1){
-							agents[k].data({ //change the agent's goal
+								agents[k].data({ //change the agent's goal
 								"goal": newGoal
 							});
 							
 							agents[k].data("goalArr").push(newGoal);
 							regionArr[i][newGoal][2] = true;
 						}
+						
                     }
-					
                 }
             }
         }
 
         runGra(copyDirection);
-
-        for (var i = 0; i < agents.length; i++) {//colour all squares agents are in
-            changeColor(agents[i].data("x"), agents[i].data("y"));
-        }
 		
 		if(maxSteps != 0 && currentSteps >= maxSteps){
 			n = runs;
@@ -563,11 +693,6 @@ function run(runs) {
     cleanNumber();
     moreThanOneAgent();
 	
-	//end algorithm after max steps is reached
-	if(finish){
-		saveRun();
-	}
-	
 }
 
 //this method calls the run function n times
@@ -594,6 +719,7 @@ function getCurrentDate() {
     var mm = today.getMonth()+1; //January is 0!
     var yyyy = today.getFullYear();
 
+
     if(dd<10) {
         dd='0'+dd
     }
@@ -606,8 +732,10 @@ function getCurrentDate() {
 }
 //this method is run after the algorithm finishes by either reaching the maximum number of steps, or by having all node be visited and all agents have reached their goals
 function saveRun(){
-	var description=$("#descriptionOfRun").val();
-	var regions = [];
+	var description = "Map size: "+plainMapArray.length+"x"+ plainMapArray[0].length+"; ";
+	description += "Steps: " + currentSteps+ "; ";
+	description += $("#descriptionOfRun").val();
+    var regions = [];
 	for (var i in regionArr) {
 		var region = {};
 		var spaces="";
@@ -735,6 +863,47 @@ function changeColor(i, j) {
 
 
 //--------------------------------------graphical view------------------------------------------------------------------------------
+
+
+
+
+
+function displayTargets(region) {
+	$('#nodeInfoInGraphical').show();
+    $("#targetList").text("");
+    var coordinates="";
+    for(var i = 0; i < regionArr[region].length; i++){
+        if(algorithm == "free form" && regionArr[region][i][2] == false){
+            //TODO: node i is in the target list
+			var x = regionArr[region][i][0];
+			var y = regionArr[region][i][1];
+            coordinates += "(" + x + "," + y +") ";
+        }
+        else if(regionArr[region][i][3] == false){
+            //TODO: node i is in the target list
+            var x = regionArr[region][i][0]+1;
+            var y = regionArr[region][i][1]+1;
+            coordinates += "(" + x + "," + y +") ";
+        }
+
+    }
+    $("#targetList").text(coordinates);
+
+
+	var agentTable=$("#agentTarget");
+    agentTable.empty();
+	for (var j in agents){
+		if (agents[j].data("region") == currentRegionNum+"") {
+            var goal = agents[j].data("goal");
+            var id = agents[j].data("id");
+            var goalx = regionArr[agents[j].data("region")][goal][0] + 1;
+            var goaly = regionArr[agents[j].data("region")][goal][1] + 1;
+            var goalString = "(" + goalx + "," + goaly + ") ";
+            agentTable.append("<tr><td> Agent " + id + "</td><td>" + goalString + "</td></tr>");
+        }
+	}
+}
+
 
 //__________________________to load information of node
 function queryData(x, y) {
@@ -902,6 +1071,7 @@ function runGra(copyDirection) {
             "y": y
         }).attr({x: x * 60 + 25, y: y * 60 + 25}).toFront();
     }
+    displayTargets(currentRegionNum);
 }
 
 
@@ -982,7 +1152,7 @@ function displayRun(index) {
 
 function buildDivOfForm(key,value) {
 	var form='<div class="form-group">' +
-				'<label class="col-sm-2 control-label">'+key+'</label>' +
+				'<label class="col-sm-3 control-label">'+key+'</label>' +
 				'<label  id="runId" class="control-label">'+value+'</label>' +
 			'</div>';
     $("#formOfRun").append(form);
