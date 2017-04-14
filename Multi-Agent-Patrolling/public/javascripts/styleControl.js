@@ -5,7 +5,7 @@ function toGraphicalView() {
     $("#blockView").hide();
     $("#graphicalView").show();
     $("#toBlockViewBtn").show();
-
+    $("#nodeInfoInGraphical").dialog("open");
 }
 
 function toBlockView() {
@@ -13,4 +13,5 @@ function toBlockView() {
     $("#graphicalView").hide();
     $("#toBlockViewBtn").hide();
     $('#nodeInfoInGraphical').hide();
+    $("#nodeInfoInGraphical").dialog("close");
 }

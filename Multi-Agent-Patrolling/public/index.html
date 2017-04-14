@@ -17,15 +17,31 @@
 <br/>
 <br/>
 
+<script>
+    $(function () {
+        $("#nodeInfoInGraphical").dialog({
+            closeOnEscape: false,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
+            }
+        });
+        $("span.ui-dialog-title").text('Agent Current Info');
+        $("#nodeInfoInGraphical").dialog("close");
+    });
+</script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 <div class="row" id="mainView">
     <div class="col-md-9">
         <div class="container">
             <div id="blockView">
             </div>
             <br/>
-            <div id="nodeInfoInGraphical" style="display: none" >
+            <div id="nodeInfoInGraphical" style="display: none">
                 <div class="panel-title"><b>Target list</b></div>
                 <div id="targetList" style="max-width: 800px"></div>
+                <br/>
                 <table class="table-striped" id="agentTargetTable">
                     <thead>
                     <td><b>Agent</b></td>
@@ -35,7 +51,7 @@
                 </table>
             </div>
             <br/>
-            <div id="graphicalView" style="display: none " >
+            <div id="graphicalView" style="display: none ">
             </div>
         </div>
     </div>
@@ -102,7 +118,8 @@
 <div id="oldRun" class="container" style="text-align: center; display: none">
     <div class="well well-sm">
         <div>
-            <button onclick="closeRunList()" type="button" class="close cleanAlpha" aria-label="Close"><span class="duiqi">&times;</span>
+            <button onclick="closeRunList()" type="button" class="close cleanAlpha" aria-label="Close"><span
+                    class="duiqi">&times;</span>
             </button>
         </div>
         <br>
@@ -142,11 +159,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" >Run Information</h4>
+                <h4 class="modal-title">Run Information</h4>
             </div>
             <div class="modal-body">
-                    <form class="form-horizontal" id="formOfRun">
-                    </form>
+                <form class="form-horizontal" id="formOfRun">
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
