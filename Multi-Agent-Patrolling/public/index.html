@@ -70,34 +70,40 @@
             <button id="fileButton" class="btn btn-large btn-block btn-success" type="button" onclick="maps()">Upload
             </button>
         </form>
-		<br/>
-		<button id="newFileButton" style="display: none" class="btn btn-large btn-block btn-success" type="button" onclick="clearBox();history.go(0)">New Run
+        <br/>
+        <button id="newFileButton" style="display: none" class="btn btn-large btn-block btn-success" type="button"
+                onclick="clearBox();history.go(0)">New Run
         </button>
-       <br/>
-        <form class="form-inline" >
+        <br/>
+        <form class="form-inline">
             <input id="maxSteps" type="text" class="form-control" placeholder="Enter Limited Steps"/>
         </form>
         <br/>
 
-        <div name="forHide" style="display: none" >
-		
-        <button id="runStepBtn" style="display: none" class="btn btn-large btn-block btn-danger" type="button" onclick="run(1)">Run/One Step</button>
-        <br/>
-        <form class="form-inline">
-            <input id="stepsInput" style="display: none" id="steps" type="text" class="form-control" placeholder="Enter Steps"/>
-            <button id="runStepsBtn" style="display: none" class="btn btn-large btn-block btn-primary" type="button" onclick="runNsteps()">Run/Multiple Steps
+        <div name="forHide" style="display: none">
+
+            <button id="runStepBtn" style="display: none" class="btn btn-large btn-block btn-danger" type="button"
+                    onclick="run(1)">Run/One Step
             </button>
-        </form>
-		<br/>
-        <button id="toBlockViewBtn" style="display: none" class="btn btn-large btn-block btn-info" type="button"
-                onclick="toBlockView()">Block View
-        </button>
-		
+            <br/>
+            <form class="form-inline">
+                <input id="stepsInput" style="display: none" id="steps" type="text" class="form-control"
+                       placeholder="Enter Steps"/>
+                <button id="runStepsBtn" style="display: none" class="btn btn-large btn-block btn-primary" type="button"
+                        onclick="runNsteps()">Run/Multiple Steps
+                </button>
+            </form>
+            <br/>
+            <button id="toBlockViewBtn" style="display: none" class="btn btn-large btn-block btn-info" type="button"
+                    onclick="toBlockView()">Block View
+            </button>
+            <br/>
         </div>
-		
+
         <button class="btn btn-large btn-block btn-success" type="button" onclick="getAllOldRuns()">Old Runs</button>
         <br/>
-        <button class="btn btn-large btn-block btn-info"  style="display: none" data-toggle="modal" id="saveBtn" data-target="#saveRun" type="button">Save
+        <button class="btn btn-large btn-block btn-info" style="display: none" data-toggle="modal" id="saveBtn"
+                data-target="#saveRun" type="button">Save
             Run
         </button>
     </div>
@@ -107,7 +113,8 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button id="saveRunBtn" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <button id="saveRunBtn" type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="myModalLabel">Save Run</h4>
             </div>
             <div class="modal-body">

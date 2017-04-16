@@ -200,9 +200,8 @@ function maps() {
         fileLines = contents.split(/\n/g);
     };
     fr.readAsText(fileToLoad);
-
-    alert("Loading Map...");
-
+	
+	
     //validate file line-by-line
     if (fileLines[0].substring(0, 3) != "Map") { //check that this is a map file
         alert("Invalid input on line 1");
@@ -474,6 +473,7 @@ function showRunButtons() {
     $("#stepsInput").show();
     $("#runStepsBtn").show();
     $("#newFileButton").show();
+    $('#Algorithm').prop('disabled', 'disabled');
 }
 
 //clear max steps box on page reload
@@ -728,6 +728,7 @@ function run(runs) {
         }
         if (finished || finish) {
             finish = true;
+			n = runs;
             //Make save run button appear and remove alert
             $("#saveBtn").show();
             // alert("Algorithm is finished! Feel free to save your results");
