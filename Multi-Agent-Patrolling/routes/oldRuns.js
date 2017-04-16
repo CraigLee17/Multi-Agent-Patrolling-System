@@ -12,7 +12,11 @@ function search(filter, cb) {
     var containsRegEx = ".*" + filter + ".*";
     var query = {};
     query.$or = [
+        {"numOfRegion":filter},
+        {"steps":filter},
+        {"mapSize":filter},
         {"id": filter},
+        {"aName": filter},
         {'description': {$regex: containsRegEx}},
         {'date': {$regex: containsRegEx}}
     ];

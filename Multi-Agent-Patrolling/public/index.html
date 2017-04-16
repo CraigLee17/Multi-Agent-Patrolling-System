@@ -58,6 +58,13 @@
 
     <div class="col-md-2">
         <h2>Multi-Agents Patrolling System</h2>
+
+        <select id="Algorithm" class="form-control form-inline btn-primary">
+            <option value="Free Form">Free Form Algorithm</option>
+            <option value="Constrained 3">Constrained 3 Algorithm</option>
+            <option value="Constrained 4">Constrained 4 Algorithm</option>
+        </select>
+        <br>
         <form class="form-inline">
             <input id="fileInput" type="file" class="form-control"/>
             <button id="fileButton" class="btn btn-large btn-block btn-success" type="button" onclick="maps()">Upload
@@ -66,18 +73,13 @@
 		<br/>
 		<button id="newFileButton" style="display: none" class="btn btn-large btn-block btn-success" type="button" onclick="clearBox();history.go(0)">New Run
         </button>
-        <br/>
-        <form class="form-inline">
-            <input id="maxSteps" type="text" class="form-control" placeholder="Enter Maximum Steps"/>
+       <br/>
+        <form class="form-inline" >
+            <input id="maxSteps" type="text" class="form-control" placeholder="Enter Limited Steps"/>
         </form>
         <br/>
-        <select id="Algorithm" class="form-control form-inline btn-primary">
-            <option value="Free Form">Free Form Algorithm</option>
-            <option value="Constrained 3">Constrained 3 Algorithm</option>
-            <option value="Constrained 4">Constrained 4 Algorithm</option>
-        </select>
-		
-        <hr/>
+
+        <div name="forHide" style="display: none" >
 		
         <button id="runStepBtn" style="display: none" class="btn btn-large btn-block btn-danger" type="button" onclick="run(1)">Run/One Step</button>
         <br/>
@@ -91,11 +93,11 @@
                 onclick="toBlockView()">Block View
         </button>
 		
-		<hr/>
+        </div>
 		
         <button class="btn btn-large btn-block btn-success" type="button" onclick="getAllOldRuns()">Old Runs</button>
         <br/>
-        <button class="btn btn-large btn-block btn-info" data-toggle="modal" data-target="#saveRun" type="button">Save
+        <button class="btn btn-large btn-block btn-info"  style="display: none" data-toggle="modal" id="saveBtn" data-target="#saveRun" type="button">Save
             Run
         </button>
     </div>
@@ -146,8 +148,12 @@
             <thead>
             <td>ID</td>
             <td>Description</td>
+            <td>Algorithm</td>
+            <td>Map Size</td>
             <td>Date</td>
+            <td>Limited Steps</td>
             <td>Steps</td>
+            <!--<td>Number Of Region</td>-->
             <td>View More</td>
             </thead>
             <tbody id="tableBody">

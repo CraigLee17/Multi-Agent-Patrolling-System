@@ -8,9 +8,17 @@ var oldRunSchema = mongoose.Schema({
     description:String,
     date:String,
     steps:String,
+    mapSize:String,
+    maxSteps:String,
+    aName:String,
+    numOfRegion:String,
     regions:[{
         rid:String,
         spaces:String,
+        targetList:[{
+            currentTargetList:String,
+            steps:String
+        }]
     }],
     agents:[
         {

@@ -210,19 +210,19 @@ function maps() {
     }
 
     if (isNaN(fileLines[1]) || fileLines[1] < 8 || fileLines[1] > 15) {//check that line 1 is a number in the range 8 - 15
-        alert("Invalid input on line 2");
+        alert("Invalid input on line 2\Map width must be 8-15");
         return;
     }
     var width = fileLines[1];
 
     if (isNaN(fileLines[2]) || fileLines[2] < 8 || fileLines[2] > 15) {//check that line 2 is a number in the range 8 - 15
-        alert("Invalid input on line 3");
+        alert("Invalid input on line 3\Map height must be 8-15");
         return;
     }
     var height = fileLines[2];
 
     if (isNaN(fileLines[3]) || fileLines[3] < 1 || fileLines[3] > ((width * height) / 2)) {//check that line 3 is a number in the range 1 - half the number of nodes on the map
-        alert("Invalid input on line 4");
+        alert("Invalid input on line 4\nNumber of regions must be greater than 1 and less then half the map size");
         return;
     }
     var areas = fileLines[3];
@@ -254,8 +254,7 @@ function maps() {
         for (var j = 0; j < bigNodes.length; j++) {
             var node = new Array();
             var nodeLoc = bigNodes[j].split(",");
-            //TODO: make sure nodeLoc doesn't go to large. But it didn't work when I used nodeLoc[i] > width or height...
-            if (isNaN(nodeLoc[0]) || nodeLoc[0] < 1 || isNaN(nodeLoc[1]) || nodeLoc[1] < 1) {//make sure there is a valid x and y
+            if (isNaN(nodeLoc[0]) || nodeLoc[0] < 1 || nodeLoc[0] > plainMapArray.length || isNaN(nodeLoc[1]) || nodeLoc[1] < 1 || nodeLoc[1] > plainMapArray[0].length) {//make sure there is a valid x and y
                 alert("Invalid input on line " + line + ". Invalid node location: (" + nodeLoc[0] + "," + nodeLoc[1] + ")\n" + "X must be 1 - " + width + "\nY must be 1 - " + height);
                 return;
             }
@@ -268,8 +267,6 @@ function maps() {
             plainMapArray[nodeLoc[0] - 1][nodeLoc[1] - 1] = 1;
         }
 
-        //TODO: check that no node is duplicated
-
         //check that the region is valid with at least 1 node
         if (regionArr[i].length < 1) {
             alert("Invalid input on line " + line + ". Improper number of nodes");
@@ -279,6 +276,16 @@ function maps() {
         if (!regionSuccess) {
             alert("Invalid input on line " + line + ". Regions must be connected to themselves");
             return;
+        }
+
+        //check that no node is duplicated
+        for (var a = 0; a < regionArr[i].length; a++) {
+            for (b = a + 1; b < regionArr[i].length; b++) {
+                if (regionArr[i][a][0] == regionArr[i][b][0] && regionArr[i][a][1] == regionArr[i][b][1]) {
+                    alert("Invalid input on line " + line + ". Regions must not contain duplicate nodes");
+                    return;
+                }
+            }
         }
 
         //make sure region is not connected to other regions
@@ -318,13 +325,13 @@ function maps() {
             //check that agent id is unique
             line++;
             if (isNaN(fileLines[line]) || fileLines[line] == "") {
-                alert("Invalid input on line " + line);
+                alert("Invalid input on line " + line + "\nAgents must have valid id number");
                 return;
             }
             for (var j = 0; j < newAgents.length; j++) {
                 for (var k = 0; k < newAgents[j].length; k++) {
                     if (newAgents[j][k][0] == fileLines[line]) {
-                        alert("Invalid input on line " + line);
+                        alert("Invalid input on line " + line + "\nAgents must have a unique id");
                         return;
                     }
                 }
@@ -335,8 +342,8 @@ function maps() {
             //check that agent's position is in the region
             line++;
             var agentLoc = fileLines[line].split(",");
-            if (isNaN(agentLoc[0]) || agentLoc[0] < 1 || isNaN(agentLoc[1]) || agentLoc[1] < 1) {//make sure there is a valid x and y
-                alert("Invalid input on line " + line + ". Invalid position");
+            if (isNaN(agentLoc[0]) || agentLoc[0] < 1 || agentLoc[0] > plainMapArray.length || isNaN(agentLoc[1]) || agentLoc[1] < 1 || agentLoc[1] > plainMapArray[0].length) {//make sure there is a valid x and y
+                alert("Invalid input on line " + line + ". Invalid agent position");
                 return;
             }
             var exists = false;
@@ -450,6 +457,8 @@ function maps() {
         document.getElementById("maxSteps").value = "Step " + currentSteps + "/" + maxSteps;
     }
 
+    initialAllTargetList();
+
     setUpBlockView(plainMapArray, newAgents);
     setUpRegion(plainMapArray);
     toBlockView();
@@ -460,7 +469,7 @@ function maps() {
 function showRunButtons() {
     $("#fileInput").hide();
     $("#fileButton").hide();
-
+    $("[name='forHide']").show();
     $("#runStepBtn").show();
     $("#stepsInput").show();
     $("#runStepsBtn").show();
@@ -691,6 +700,7 @@ function run(runs) {
         }
 
         runGra(copyDirection);
+        getAllRegionTargetListForSpecifiedStep();
         cleanNumber();
         moreThanOneAgent();
 
@@ -718,7 +728,9 @@ function run(runs) {
         }
         if (finished || finish) {
             finish = true;
-            alert("Algorithm is finished! Feel free to save your results");
+            //Make save run button appear and remove alert
+            $("#saveBtn").show();
+            // alert("Algorithm is finished! Feel free to save your results");
         }
 
     }
@@ -728,7 +740,7 @@ function run(runs) {
 
 //this method calls the run function n times
 function runNsteps() {
-    var steps = $("#steps").val();
+    var steps = $("#stepsInput").val();
 
     run(steps);
 }
@@ -775,6 +787,42 @@ function getCurrentDate() {
     today = mm + '/' + dd + '/' + yyyy + " " + hh + ':' + mins + ' ' + ampm;
     return today;
 }
+
+
+var allTargetList = new Array();
+var flagArr=new Array();
+function initialAllTargetList() {
+    for (var i = 0; i < regionArr.length; i++) {
+        flagArr.push(0);
+        var regionTargetListSetObj = {};
+        regionTargetListSetObj.rid = i;
+        regionTargetListSetObj.targetList = new Array();
+        allTargetList.push(regionTargetListSetObj);
+    }
+}
+
+function getAllRegionTargetListForSpecifiedStep() {
+    for (var i = 0; i < allTargetList.length; i++) {
+        var coordinates = "";
+        for (var j = 0; j < regionArr[i].length; j++) {
+            if (algorithm == "free form" && regionArr[i][j][2] == false) {
+                var x = regionArr[i][j][0];
+                var y = regionArr[i][j][1];
+                coordinates += "(" + x + "," + y + ") ";
+            }
+            else if (regionArr[i][j][3] == false) {
+                var x = regionArr[i][j][0] + 1;
+                var y = regionArr[i][j][1] + 1;
+                coordinates += "(" + x + "," + y + ") ";
+            }
+        }
+        if (flagArr[i]!=coordinates.length){
+            allTargetList[i].targetList.push({steps: currentSteps, currentTargetList: coordinates});
+            flagArr[i]=coordinates.length;
+        }
+    }
+}
+
 //this method is run after the algorithm finishes by either reaching the maximum number of steps, or by having all node be visited and all agents have reached their goals
 function saveRun() {
     if (!finish) {
@@ -782,11 +830,11 @@ function saveRun() {
         return;
     }
 
-    var description = "Map size: " + plainMapArray.length + "x" + plainMapArray[0].length + "; ";
-    description += "Max Steps: " + maxSteps + "; ";
-    description += "Algorithm name: " + algorithm + "; ";
-    description += $("#descriptionOfRun").val();
+    var mapSize = plainMapArray.length + "x" + plainMapArray[0].length;
+    var aName = algorithm;
+    var description = $("#descriptionOfRun").val();
     var regions = [];
+    var targetListOfNStep = {};
     for (var i in regionArr) {
         var region = {};
         var spaces = "";
@@ -797,6 +845,7 @@ function saveRun() {
         }
         region.rid = i;
         region.spaces = spaces;
+        region.targetList=allTargetList[i].targetList;
         regions.push(region);
     }
 
@@ -818,10 +867,10 @@ function saveRun() {
         agent.track = "";
         agent.targets = "";
         goalArr.forEach(function (goalLoc) {
-            agent.targets += "(" + (regionArr[agents[i].data('region')][goalLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][goalLoc][1] + 1) + ")";
+            agent.targets += "(" + (regionArr[agents[i].data('region')][goalLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][goalLoc][1] + 1) + ") ";
         });
         trackLoc.forEach(function (trackLoc) {
-            agent.track += "(" + (regionArr[agents[i].data('region')][trackLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][trackLoc][1] + 1) + ")";
+            agent.track += "(" + (regionArr[agents[i].data('region')][trackLoc][0] + 1) + "," + (regionArr[agents[i].data('region')][trackLoc][1] + 1) + ") ";
         });
         agentss.push(agent);
     }
@@ -829,12 +878,15 @@ function saveRun() {
     var runObj = {
         id: generateID(),
         description: description,
+        mapSize: mapSize,
+        maxSteps: maxSteps,
+        aName: aName,
         date: getCurrentDate(),
         steps: currentSteps,
         regions: regions,
-        agents: agentss
+        agents: agentss,
+        numOfRegion:regionArr.length
     }
-
 
     //Gather run information
     /*
@@ -857,6 +909,7 @@ function saveRun() {
         },
     });
 
+    console.log(runObj);
     //Save information to database
 }
 
@@ -1160,8 +1213,12 @@ function buildOldRunTable(list) {
         row = "<tr>" +
             "<td>" + list[i].id + "</td>" +
             "<td>" + list[i].description + "</td>" +
+            "<td>" + list[i].aName + "</td>" +
+            "<td>" + list[i].mapSize + "</td>" +
             "<td>" + list[i].date + "</td>" +
+            "<td>" + list[i].maxSteps + "</td>" +
             "<td>" + list[i].steps + "</td>" +
+            // "<td>" + list[i].numOfRegion + "</td>" +
             "<td><button class='btn btn-info' data-toggle='modal' data-target='#runInfo' onclick='displayRun(this.id)' id='btn" + i + "'>More</button></td>" +
             "</tr>";
         $("#tableBody").append(row);
@@ -1173,18 +1230,28 @@ function displayRun(index) {
     $("#formOfRun").empty();
     var run = allOldRunsList[index];
     var id = run.id;
-    buildDivOfForm('ID:', id);
+    buildDivOfForm('ID: ', id);
     var description = run.description;
-    buildDivOfForm('Description:', description);
-    var date = run.date;
-    buildDivOfForm('Date:', date);
+    buildDivOfForm('Description: ', description);
+    buildDivOfForm('Limited Steps: ', run.maxSteps);
     var steps = run.steps;
-    buildDivOfForm('Steps:', steps);
+    buildDivOfForm('Steps: ', steps);
+    buildDivOfForm('Algorithm: ', run.aName);
+    buildDivOfForm('Map Size: ', run.mapSize);
+    var date = run.date;
+    buildDivOfForm('Date: ', date);
+    buildDivOfForm('Number Of Region:', run.numOfRegion);
+
+
     $("#formOfRun").append("<hr/>");
     for (var i in run.regions) {
         var rid = run.regions[i].rid;
         var spaces = run.regions[i].spaces;
-        buildDivOfForm("Region " + rid + " :", spaces);
+        buildDivOfForm("Region " + rid + " : ", spaces);
+        buildDivOfForm("TargetList：", "");
+        run.regions[i].targetList.forEach(targetObj => {
+            buildDivOfForm("Step "+targetObj.steps+": ", targetObj.currentTargetList);
+        })
         for (var j in run.agents) {
             if (run.agents[j].rid == rid) {
                 var agent = run.agents[j];
@@ -1192,8 +1259,8 @@ function displayRun(index) {
                 var track = agent.track;
                 var targets = agent.targets;
                 buildDivOfForm("Agent " + aid, "");
-                buildDivOfForm("Track:", track);
-                buildDivOfForm("Targets:", targets);
+                buildDivOfForm("Track: ", track);
+                buildDivOfForm("Targets: ", targets);
             }
         }
         $("#formOfRun").append("<hr/>");
@@ -1202,9 +1269,9 @@ function displayRun(index) {
 }
 
 function buildDivOfForm(key, value) {
-    var form = '<div class="form-group">' +
-        '<label class="col-sm-3 control-label">' + key + '</label>' +
-        '<label  id="runId" class="control-label">' + value + '</label>' +
+    var form = '<div class="form-group">' +// 改过class
+        '<label class="control-label">' + key + '</label>' +
+        '<label  id="runId" class="">' + value + '</label>' +
         '</div>';
     $("#formOfRun").append(form);
 }
