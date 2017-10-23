@@ -24,7 +24,7 @@
 ![alt initialization](http://34.212.105.251/images/multiAgent/initialization.png)
 
 2. 10 x 10 Map
-![alt 10 x 10 Map](http://34.212.105.251/images/multiAgent/10x10.gif =400x400)
+<img src = "http://34.212.105.251/images/multiAgent/10x10.gif" width="400" height="400"/>
 
 3. 15 x 15 Map
-![alt 15 x 15 Map](http://34.212.105.251/images/multiAgent/15x15.gif =400x400)
+<img src = "http://34.212.105.251/images/multiAgent/15x15.gif" width="400" height="400"/>
