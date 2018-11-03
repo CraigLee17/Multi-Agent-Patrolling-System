@@ -17,14 +17,3 @@
 * [Raphaël](http://dmitrybaranovskiy.github.io/raphael/), a small JavaScript library that work with vector graphics on the web
 * [Node.js](https://nodejs.org/en/)
 * [MongoDB/Mongoose](http://mongoosejs.com/)
-
-#### Demo:
-
-1. Initialization
-![alt initialization](http://34.212.105.251/images/multiAgent/initialization.png)
-
-2. 10 x 10 Map
-<img src = "http://34.212.105.251/images/multiAgent/10x10.gif" width="400" height="400"/>
-
-3. 15 x 15 Map
-<img src = "http://34.212.105.251/images/multiAgent/15x15.gif" width="400" height="400"/>
